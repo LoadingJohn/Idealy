@@ -6,13 +6,40 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		358B3EC22E4CB56F0045DF6D /* MLX in Frameworks */ = {isa = PBXBuildFile; productRef = 358B3EC12E4CB56F0045DF6D /* MLX */; };
+		358B3EC42E4CB56F0045DF6D /* MLXFFT in Frameworks */ = {isa = PBXBuildFile; productRef = 358B3EC32E4CB56F0045DF6D /* MLXFFT */; };
+		358B3EC62E4CB56F0045DF6D /* MLXFast in Frameworks */ = {isa = PBXBuildFile; productRef = 358B3EC52E4CB56F0045DF6D /* MLXFast */; };
+		358B3EC82E4CB56F0045DF6D /* MLXLinalg in Frameworks */ = {isa = PBXBuildFile; productRef = 358B3EC72E4CB56F0045DF6D /* MLXLinalg */; };
+		358B3ECA2E4CB56F0045DF6D /* MLXNN in Frameworks */ = {isa = PBXBuildFile; productRef = 358B3EC92E4CB56F0045DF6D /* MLXNN */; };
+		358B3ED72E5042DC0045DF6D /* MLXEmbedders in Frameworks */ = {isa = PBXBuildFile; productRef = 358B3ED62E5042DC0045DF6D /* MLXEmbedders */; };
+		358B3ED92E5042DC0045DF6D /* MLXLLM in Frameworks */ = {isa = PBXBuildFile; productRef = 358B3ED82E5042DC0045DF6D /* MLXLLM */; };
+		358B3EDB2E5042DC0045DF6D /* MLXLMCommon in Frameworks */ = {isa = PBXBuildFile; productRef = 358B3EDA2E5042DC0045DF6D /* MLXLMCommon */; };
+		358B3EDD2E5042DC0045DF6D /* MLXMNIST in Frameworks */ = {isa = PBXBuildFile; productRef = 358B3EDC2E5042DC0045DF6D /* MLXMNIST */; };
+		358B3EDF2E5042DC0045DF6D /* MLXVLM in Frameworks */ = {isa = PBXBuildFile; productRef = 358B3EDE2E5042DC0045DF6D /* MLXVLM */; };
+		358B3EE12E5042DC0045DF6D /* StableDiffusion in Frameworks */ = {isa = PBXBuildFile; productRef = 358B3EE02E5042DC0045DF6D /* StableDiffusion */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		35C66FB72E48B3690016534C /* Idealy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Idealy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		358B3ECE2E4F55F20045DF6D /* Exceptions for "Idealy" folder in "Idealy" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 35C66FB62E48B3690016534C /* Idealy */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		35C66FB92E48B3690016534C /* Idealy */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				358B3ECE2E4F55F20045DF6D /* Exceptions for "Idealy" folder in "Idealy" target */,
+			);
 			path = Idealy;
 			sourceTree = "<group>";
 		};
@@ -23,6 +50,17 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				358B3EDF2E5042DC0045DF6D /* MLXVLM in Frameworks */,
+				358B3EDD2E5042DC0045DF6D /* MLXMNIST in Frameworks */,
+				358B3ED92E5042DC0045DF6D /* MLXLLM in Frameworks */,
+				358B3EE12E5042DC0045DF6D /* StableDiffusion in Frameworks */,
+				358B3EC62E4CB56F0045DF6D /* MLXFast in Frameworks */,
+				358B3EC82E4CB56F0045DF6D /* MLXLinalg in Frameworks */,
+				358B3ED72E5042DC0045DF6D /* MLXEmbedders in Frameworks */,
+				358B3EC22E4CB56F0045DF6D /* MLX in Frameworks */,
+				358B3ECA2E4CB56F0045DF6D /* MLXNN in Frameworks */,
+				358B3EDB2E5042DC0045DF6D /* MLXLMCommon in Frameworks */,
+				358B3EC42E4CB56F0045DF6D /* MLXFFT in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +103,17 @@
 			);
 			name = Idealy;
 			packageProductDependencies = (
+				358B3EC12E4CB56F0045DF6D /* MLX */,
+				358B3EC32E4CB56F0045DF6D /* MLXFFT */,
+				358B3EC52E4CB56F0045DF6D /* MLXFast */,
+				358B3EC72E4CB56F0045DF6D /* MLXLinalg */,
+				358B3EC92E4CB56F0045DF6D /* MLXNN */,
+				358B3ED62E5042DC0045DF6D /* MLXEmbedders */,
+				358B3ED82E5042DC0045DF6D /* MLXLLM */,
+				358B3EDA2E5042DC0045DF6D /* MLXLMCommon */,
+				358B3EDC2E5042DC0045DF6D /* MLXMNIST */,
+				358B3EDE2E5042DC0045DF6D /* MLXVLM */,
+				358B3EE02E5042DC0045DF6D /* StableDiffusion */,
 			);
 			productName = Idealy;
 			productReference = 35C66FB72E48B3690016534C /* Idealy.app */;
@@ -94,6 +143,10 @@
 			);
 			mainGroup = 35C66FAE2E48B3690016534C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				358B3EC02E4CB56F0045DF6D /* XCRemoteSwiftPackageReference "mlx-swift" */,
+				358B3ED52E5042DC0045DF6D /* XCRemoteSwiftPackageReference "mlx-swift-examples" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 35C66FB82E48B3690016534C /* Products */;
 			projectDirPath = "";
@@ -256,6 +309,9 @@
 				DEVELOPMENT_TEAM = UNP26U3B6F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Idealy/Info.plist;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app needs microphone access to transcribe your voice into\n  text for idea capture.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "This app uses speech recognition to convert your voice to text for\n   better idea input.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -287,6 +343,9 @@
 				DEVELOPMENT_TEAM = UNP26U3B6F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Idealy/Info.plist;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app needs microphone access to transcribe your voice into\n  text for idea capture.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "This app uses speech recognition to convert your voice to text for\n   better idea input.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -330,6 +389,83 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		358B3EC02E4CB56F0045DF6D /* XCRemoteSwiftPackageReference "mlx-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ml-explore/mlx-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.25.6;
+			};
+		};
+		358B3ED52E5042DC0045DF6D /* XCRemoteSwiftPackageReference "mlx-swift-examples" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ml-explore/mlx-swift-examples.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.25.5;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		358B3EC12E4CB56F0045DF6D /* MLX */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 358B3EC02E4CB56F0045DF6D /* XCRemoteSwiftPackageReference "mlx-swift" */;
+			productName = MLX;
+		};
+		358B3EC32E4CB56F0045DF6D /* MLXFFT */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 358B3EC02E4CB56F0045DF6D /* XCRemoteSwiftPackageReference "mlx-swift" */;
+			productName = MLXFFT;
+		};
+		358B3EC52E4CB56F0045DF6D /* MLXFast */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 358B3EC02E4CB56F0045DF6D /* XCRemoteSwiftPackageReference "mlx-swift" */;
+			productName = MLXFast;
+		};
+		358B3EC72E4CB56F0045DF6D /* MLXLinalg */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 358B3EC02E4CB56F0045DF6D /* XCRemoteSwiftPackageReference "mlx-swift" */;
+			productName = MLXLinalg;
+		};
+		358B3EC92E4CB56F0045DF6D /* MLXNN */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 358B3EC02E4CB56F0045DF6D /* XCRemoteSwiftPackageReference "mlx-swift" */;
+			productName = MLXNN;
+		};
+		358B3ED62E5042DC0045DF6D /* MLXEmbedders */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 358B3ED52E5042DC0045DF6D /* XCRemoteSwiftPackageReference "mlx-swift-examples" */;
+			productName = MLXEmbedders;
+		};
+		358B3ED82E5042DC0045DF6D /* MLXLLM */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 358B3ED52E5042DC0045DF6D /* XCRemoteSwiftPackageReference "mlx-swift-examples" */;
+			productName = MLXLLM;
+		};
+		358B3EDA2E5042DC0045DF6D /* MLXLMCommon */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 358B3ED52E5042DC0045DF6D /* XCRemoteSwiftPackageReference "mlx-swift-examples" */;
+			productName = MLXLMCommon;
+		};
+		358B3EDC2E5042DC0045DF6D /* MLXMNIST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 358B3ED52E5042DC0045DF6D /* XCRemoteSwiftPackageReference "mlx-swift-examples" */;
+			productName = MLXMNIST;
+		};
+		358B3EDE2E5042DC0045DF6D /* MLXVLM */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 358B3ED52E5042DC0045DF6D /* XCRemoteSwiftPackageReference "mlx-swift-examples" */;
+			productName = MLXVLM;
+		};
+		358B3EE02E5042DC0045DF6D /* StableDiffusion */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 358B3ED52E5042DC0045DF6D /* XCRemoteSwiftPackageReference "mlx-swift-examples" */;
+			productName = StableDiffusion;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 35C66FAF2E48B3690016534C /* Project object */;
 }
