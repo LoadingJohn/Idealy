@@ -15,12 +15,12 @@ struct ReviewDumpView: View {
     
     let dumpText: String
     let targetBox: Box
-    let modelName: String
+    let modelType: AIModelType
     
-    init(dumpText: String, targetBox: Box, modelName: String, mlxModelManager: MLXModelManager) {
+    init(dumpText: String, targetBox: Box, modelType: AIModelType, mlxModelManager: MLXModelManager) {
         self.dumpText = dumpText
         self.targetBox = targetBox
-        self.modelName = modelName
+        self.modelType = modelType
         
         // Initialize the dumpProcessor with the passed MLXModelManager
         self._dumpProcessor = StateObject(wrappedValue: DumpProcessorVM(mlxModelManager: mlxModelManager))
@@ -72,7 +72,7 @@ struct ReviewDumpView: View {
                                         .foregroundColor(colors.text)
                                         .multilineTextAlignment(.center)
                                     
-                                    Text("Using \(modelName)")
+                                    Text("Using \(modelType.displayName)")
                                         .font(.system(size: 14))
                                         .foregroundColor(colors.textSecondary)
                                 }
@@ -112,7 +112,7 @@ struct ReviewDumpView: View {
         .onAppear {
             // Set the view context for Core Data operations
             dumpProcessor.viewContext = viewContext
-            dumpProcessor.processDump(dumpText: dumpText, box: targetBox, modelName: modelName)
+            dumpProcessor.processDump(dumpText: dumpText, box: targetBox, modelName: modelType.displayName)
         }
     }
 }
@@ -128,7 +128,7 @@ struct ReviewDumpView: View {
         ReviewDumpView(
             dumpText: "Sample dump text for testing",
             targetBox: sampleBox,
-            modelName: "Apple Intelligence",
+            modelType: .appleIntelligence,
             mlxModelManager: MLXModelManager.shared
         )
         .environment(\.colorPalette, ColorPalette.light)

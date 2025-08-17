@@ -1,5 +1,5 @@
 //
-//  IdeaProcessorVM.swift
+//  QwenIdeaProcessorVM.swift
 //  Idealy
 //
 //  Created by Claude Code on 15/8/2025.
@@ -10,7 +10,7 @@ import SwiftUI
 import Combine
 internal import CoreData
 
-class IdeaProcessorVM: ObservableObject, IdeaProcessorProtocol {
+class QwenIdeaProcessorVM: ObservableObject, IdeaProcessorProtocol {
     
     // MARK: - Published Properties
     @Published var isProcessing: Bool = false
@@ -58,7 +58,7 @@ class IdeaProcessorVM: ObservableObject, IdeaProcessorProtocol {
     ///   - content: The raw idea content to process
     ///   - modelName: The AI model to use ("Apple Intelligence" or "Qwen2.5-1.5B")
     func processIdea(title: String, content: String, modelName: String) {
-        print("🎯 IdeaProcessorVM: Starting idea processing")
+        print("🎯 QwenIdeaProcessorVM: Starting idea processing")
         print("   Title: \(title)")
         print("   Content: \(content)")
         print("   Model: \(modelName)")
@@ -463,7 +463,7 @@ class IdeaProcessorVM: ObservableObject, IdeaProcessorProtocol {
     // MARK: - Error Handling
     
     private func handleError(_ message: String) {
-        print("❌ IdeaProcessorVM Error: \(message)")
+        print("❌ QwenIdeaProcessorVM Error: \(message)")
         hasError = true
         errorMessage = message
         isProcessing = false

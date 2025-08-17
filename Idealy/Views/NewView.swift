@@ -688,7 +688,7 @@ struct BoxView: View {
             NavigationLink(destination: ReviewIdeaView(
                 title: boxName.isEmpty ? "Untitled Idea" : boxName,
                 content: boxContent,
-                modelName: selectedModel,
+                modelType: AIModelType.from(string: selectedModel),
                 mlxModelManager: mlxModelManager,
                 onBoxSaved: onBoxSaved
             )) {
@@ -803,7 +803,7 @@ struct IdeaView: View {
                 NavigationLink(destination: ReviewDumpView(
                     dumpText: ideaContent,
                     targetBox: box,
-                    modelName: selectedModel,
+                    modelType: AIModelType.from(string: selectedModel),
                     mlxModelManager: mlxModelManager
                 )) {
                     Text("Dump")

@@ -6,29 +6,84 @@
 //
 
 import SwiftUI
+import FoundationModels
 internal import CoreData
 
+enum ProcessorType {
+    case appleIntelligence(AppleIntelligenceIdeaProcessorVM)
+    case qwen(QwenIdeaProcessorVM)
+    
+    var processor: any IdeaProcessorProtocol {
+        switch self {
+        case .appleIntelligence(let processor):
+            return processor
+        case .qwen(let processor):
+            return processor
+        }
+    }
+}
+
 struct ReviewIdeaView: View {
-    @StateObject private var ideaProcessor: IdeaProcessorVM
+    @StateObject private var qwenProcessor: QwenIdeaProcessorVM
+    @State private var appleIntelligenceProcessor: AppleIntelligenceIdeaProcessorVM?
     @Environment(\.colorPalette) private var colors
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.presentationMode) var presentationMode
-    @StateObject private var mlxModelManager: MLXModelManager
     
     let title: String
     let content: String
-    let modelName: String
+    let modelType: AIModelType
     let onBoxSaved: ((Box) -> Void)?
     
-    init(title: String, content: String, modelName: String, mlxModelManager: MLXModelManager, onBoxSaved: ((Box) -> Void)? = nil) {
+    // Computed property to get the active processor
+    private var activeProcessor: any IdeaProcessorProtocol {
+        switch modelType {
+        case .appleIntelligence:
+            return appleIntelligenceProcessor ?? qwenProcessor // Fallback to Qwen if Apple Intelligence not available
+        case .qwen:
+            return qwenProcessor
+        }
+    }
+    
+    // Helper function to create the right field view based on model type
+    private func fieldView(title: String, qwenKeyPath: ReferenceWritableKeyPath<QwenIdeaProcessorVM, String>, appleIntelligenceKeyPath: ReferenceWritableKeyPath<AppleIntelligenceIdeaProcessorVM, String>, isEditable: Bool = true) -> some View {
+        if modelType == .qwen || appleIntelligenceProcessor == nil {
+            // Use Qwen processor if Qwen model selected OR Apple Intelligence not available
+            return AnyView(GeneratedFieldView(title: title, content: Binding(
+                get: { qwenProcessor[keyPath: qwenKeyPath] },
+                set: { qwenProcessor[keyPath: qwenKeyPath] = $0 }
+            ), colors: colors, isEditable: isEditable))
+        } else {
+            // Use Apple Intelligence processor
+            return AnyView(GeneratedFieldView(title: title, content: Binding(
+                get: { appleIntelligenceProcessor![keyPath: appleIntelligenceKeyPath] },
+                set: { appleIntelligenceProcessor![keyPath: appleIntelligenceKeyPath] = $0 }
+            ), colors: colors, isEditable: isEditable))
+        }
+    }
+    
+    init(title: String, content: String, modelType: AIModelType, mlxModelManager: MLXModelManager, onBoxSaved: ((Box) -> Void)? = nil) {
         self.title = title
         self.content = content
-        self.modelName = modelName
+        self.modelType = modelType
         self.onBoxSaved = onBoxSaved
         
-        // Initialize the ideaProcessor with the passed MLXModelManager
-        self._ideaProcessor = StateObject(wrappedValue: IdeaProcessorVM(mlxModelManager: mlxModelManager))
-        self._mlxModelManager = StateObject(wrappedValue: mlxModelManager)
+        // Always initialize Qwen processor
+        self._qwenProcessor = StateObject(wrappedValue: QwenIdeaProcessorVM(mlxModelManager: mlxModelManager))
+        
+        // Check Apple Intelligence availability before initializing
+        let model = SystemLanguageModel.default
+        let isAppleIntelligenceAvailable = model.availability == .available
+        
+        if modelType == .appleIntelligence && isAppleIntelligenceAvailable {
+            self._appleIntelligenceProcessor = State(initialValue: AppleIntelligenceIdeaProcessorVM())
+        } else {
+            // Don't create Apple Intelligence processor if not available - this prevents crashes
+            self._appleIntelligenceProcessor = State(initialValue: nil)
+            if modelType == .appleIntelligence {
+                print("⚠️ Apple Intelligence requested but not available - device: \(model.availability). Using Qwen fallback.")
+            }
+        }
     }
     
     var body: some View {
@@ -42,48 +97,48 @@ struct ReviewIdeaView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
                         // Processing state - show content as it streams
-                        if ideaProcessor.isProcessing {
+                        if activeProcessor.isProcessing {
                             // SUMMARY FIRST
-                            if !ideaProcessor.generatedSummary.isEmpty {
-                                GeneratedFieldView(title: "Summary", content: $ideaProcessor.generatedSummary, colors: colors, isEditable: false)
+                            if !activeProcessor.generatedSummary.isEmpty {
+                                fieldView(title: "Summary", qwenKeyPath: \.generatedSummary, appleIntelligenceKeyPath: \.generatedSummary, isEditable: false)
                             }
-                            if !ideaProcessor.generatedProblem.isEmpty {
-                                GeneratedFieldView(title: "Problem", content: $ideaProcessor.generatedProblem, colors: colors, isEditable: false)
+                            if !activeProcessor.generatedProblem.isEmpty {
+                                fieldView(title: "Problem", qwenKeyPath: \.generatedProblem, appleIntelligenceKeyPath: \.generatedProblem, isEditable: false)
                             }
-                            if !ideaProcessor.generatedSolution.isEmpty {
-                                GeneratedFieldView(title: "Solution", content: $ideaProcessor.generatedSolution, colors: colors, isEditable: false)
+                            if !activeProcessor.generatedSolution.isEmpty {
+                                fieldView(title: "Solution", qwenKeyPath: \.generatedSolution, appleIntelligenceKeyPath: \.generatedSolution, isEditable: false)
                             }
-                            if !ideaProcessor.generatedUniqueValueProposition.isEmpty {
-                                GeneratedFieldView(title: "Unique Value Proposition", content: $ideaProcessor.generatedUniqueValueProposition, colors: colors, isEditable: false)
+                            if !activeProcessor.generatedUniqueValueProposition.isEmpty {
+                                fieldView(title: "Unique Value Proposition", qwenKeyPath: \.generatedUniqueValueProposition, appleIntelligenceKeyPath: \.generatedUniqueValueProposition, isEditable: false)
                             }
-                            if !ideaProcessor.generatedCustomerSegments.isEmpty {
-                                GeneratedFieldView(title: "Customer Segments", content: $ideaProcessor.generatedCustomerSegments, colors: colors, isEditable: false)
+                            if !activeProcessor.generatedCustomerSegments.isEmpty {
+                                fieldView(title: "Customer Segments", qwenKeyPath: \.generatedCustomerSegments, appleIntelligenceKeyPath: \.generatedCustomerSegments, isEditable: false)
                             }
-                            if !ideaProcessor.generatedChannels.isEmpty {
-                                GeneratedFieldView(title: "Channels", content: $ideaProcessor.generatedChannels, colors: colors, isEditable: false)
+                            if !activeProcessor.generatedChannels.isEmpty {
+                                fieldView(title: "Channels", qwenKeyPath: \.generatedChannels, appleIntelligenceKeyPath: \.generatedChannels, isEditable: false)
                             }
-                            if !ideaProcessor.generatedRevenueStreams.isEmpty {
-                                GeneratedFieldView(title: "Revenue Streams", content: $ideaProcessor.generatedRevenueStreams, colors: colors, isEditable: false)
+                            if !activeProcessor.generatedRevenueStreams.isEmpty {
+                                fieldView(title: "Revenue Streams", qwenKeyPath: \.generatedRevenueStreams, appleIntelligenceKeyPath: \.generatedRevenueStreams, isEditable: false)
                             }
-                            if !ideaProcessor.generatedCosts.isEmpty {
-                                GeneratedFieldView(title: "Costs", content: $ideaProcessor.generatedCosts, colors: colors, isEditable: false)
+                            if !activeProcessor.generatedCosts.isEmpty {
+                                fieldView(title: "Costs", qwenKeyPath: \.generatedCosts, appleIntelligenceKeyPath: \.generatedCosts, isEditable: false)
                             }
-                            if !ideaProcessor.generatedKeyMetrics.isEmpty {
-                                GeneratedFieldView(title: "Key Metrics", content: $ideaProcessor.generatedKeyMetrics, colors: colors, isEditable: false)
+                            if !activeProcessor.generatedKeyMetrics.isEmpty {
+                                fieldView(title: "Key Metrics", qwenKeyPath: \.generatedKeyMetrics, appleIntelligenceKeyPath: \.generatedKeyMetrics, isEditable: false)
                             }
-                            if !ideaProcessor.generatedUnfairAdvantage.isEmpty {
-                                GeneratedFieldView(title: "Unfair Advantage", content: $ideaProcessor.generatedUnfairAdvantage, colors: colors, isEditable: false)
+                            if !activeProcessor.generatedUnfairAdvantage.isEmpty {
+                                fieldView(title: "Unfair Advantage", qwenKeyPath: \.generatedUnfairAdvantage, appleIntelligenceKeyPath: \.generatedUnfairAdvantage, isEditable: false)
                             }
-                            if !ideaProcessor.generatedEarlyAdopters.isEmpty {
-                                GeneratedFieldView(title: "Early Adopters", content: $ideaProcessor.generatedEarlyAdopters, colors: colors, isEditable: false)
+                            if !activeProcessor.generatedEarlyAdopters.isEmpty {
+                                fieldView(title: "Early Adopters", qwenKeyPath: \.generatedEarlyAdopters, appleIntelligenceKeyPath: \.generatedEarlyAdopters, isEditable: false)
                             }
-                            if !ideaProcessor.generatedExistingAlternatives.isEmpty {
-                                GeneratedFieldView(title: "Existing Alternatives", content: $ideaProcessor.generatedExistingAlternatives, colors: colors, isEditable: false)
+                            if !activeProcessor.generatedExistingAlternatives.isEmpty {
+                                fieldView(title: "Existing Alternatives", qwenKeyPath: \.generatedExistingAlternatives, appleIntelligenceKeyPath: \.generatedExistingAlternatives, isEditable: false)
                             }
-                            if !ideaProcessor.generatedHighLevelConcept.isEmpty {
-                                GeneratedFieldView(title: "High Level Concept", content: $ideaProcessor.generatedHighLevelConcept, colors: colors, isEditable: false)
+                            if !activeProcessor.generatedHighLevelConcept.isEmpty {
+                                fieldView(title: "High Level Concept", qwenKeyPath: \.generatedHighLevelConcept, appleIntelligenceKeyPath: \.generatedHighLevelConcept, isEditable: false)
                             }
-                        } else if ideaProcessor.hasError {
+                        } else if activeProcessor.hasError {
                             // Error state
                             VStack(spacing: 24) {
                                 Image(systemName: "exclamationmark.triangle.fill")
@@ -95,7 +150,7 @@ struct ReviewIdeaView: View {
                                         .font(.system(size: 24, weight: .semibold))
                                         .foregroundColor(colors.text)
                                     
-                                    Text(ideaProcessor.errorMessage)
+                                    Text(activeProcessor.errorMessage)
                                         .font(.system(size: 16))
                                         .foregroundColor(colors.textSecondary)
                                         .multilineTextAlignment(.center)
@@ -105,31 +160,31 @@ struct ReviewIdeaView: View {
                             .padding(.horizontal, 32)
                         } else {
                             // Completed state - show all fields as editable, SUMMARY FIRST
-                            GeneratedFieldView(title: "Summary", content: $ideaProcessor.generatedSummary, colors: colors)
-                            GeneratedFieldView(title: "Problem", content: $ideaProcessor.generatedProblem, colors: colors)
-                            GeneratedFieldView(title: "Solution", content: $ideaProcessor.generatedSolution, colors: colors)
-                            GeneratedFieldView(title: "Unique Value Proposition", content: $ideaProcessor.generatedUniqueValueProposition, colors: colors)
-                            GeneratedFieldView(title: "Customer Segments", content: $ideaProcessor.generatedCustomerSegments, colors: colors)
-                            GeneratedFieldView(title: "Channels", content: $ideaProcessor.generatedChannels, colors: colors)
-                            GeneratedFieldView(title: "Revenue Streams", content: $ideaProcessor.generatedRevenueStreams, colors: colors)
-                            GeneratedFieldView(title: "Costs", content: $ideaProcessor.generatedCosts, colors: colors)
-                            GeneratedFieldView(title: "Key Metrics", content: $ideaProcessor.generatedKeyMetrics, colors: colors)
-                            GeneratedFieldView(title: "Unfair Advantage", content: $ideaProcessor.generatedUnfairAdvantage, colors: colors)
-                            GeneratedFieldView(title: "Early Adopters", content: $ideaProcessor.generatedEarlyAdopters, colors: colors)
-                            GeneratedFieldView(title: "Existing Alternatives", content: $ideaProcessor.generatedExistingAlternatives, colors: colors)
-                            GeneratedFieldView(title: "High Level Concept", content: $ideaProcessor.generatedHighLevelConcept, colors: colors)
+                            fieldView(title: "Summary", qwenKeyPath: \.generatedSummary, appleIntelligenceKeyPath: \.generatedSummary)
+                            fieldView(title: "Problem", qwenKeyPath: \.generatedProblem, appleIntelligenceKeyPath: \.generatedProblem)
+                            fieldView(title: "Solution", qwenKeyPath: \.generatedSolution, appleIntelligenceKeyPath: \.generatedSolution)
+                            fieldView(title: "Unique Value Proposition", qwenKeyPath: \.generatedUniqueValueProposition, appleIntelligenceKeyPath: \.generatedUniqueValueProposition)
+                            fieldView(title: "Customer Segments", qwenKeyPath: \.generatedCustomerSegments, appleIntelligenceKeyPath: \.generatedCustomerSegments)
+                            fieldView(title: "Channels", qwenKeyPath: \.generatedChannels, appleIntelligenceKeyPath: \.generatedChannels)
+                            fieldView(title: "Revenue Streams", qwenKeyPath: \.generatedRevenueStreams, appleIntelligenceKeyPath: \.generatedRevenueStreams)
+                            fieldView(title: "Costs", qwenKeyPath: \.generatedCosts, appleIntelligenceKeyPath: \.generatedCosts)
+                            fieldView(title: "Key Metrics", qwenKeyPath: \.generatedKeyMetrics, appleIntelligenceKeyPath: \.generatedKeyMetrics)
+                            fieldView(title: "Unfair Advantage", qwenKeyPath: \.generatedUnfairAdvantage, appleIntelligenceKeyPath: \.generatedUnfairAdvantage)
+                            fieldView(title: "Early Adopters", qwenKeyPath: \.generatedEarlyAdopters, appleIntelligenceKeyPath: \.generatedEarlyAdopters)
+                            fieldView(title: "Existing Alternatives", qwenKeyPath: \.generatedExistingAlternatives, appleIntelligenceKeyPath: \.generatedExistingAlternatives)
+                            fieldView(title: "High Level Concept", qwenKeyPath: \.generatedHighLevelConcept, appleIntelligenceKeyPath: \.generatedHighLevelConcept)
                         }
                     }
                     .padding(.horizontal, 24)
-                    .padding(.top, ideaProcessor.isProcessing ? 120 : 24) // Dynamic padding based on processing state
+                    .padding(.top, activeProcessor.isProcessing ? 120 : 24) // Dynamic padding based on processing state
                     .padding(.bottom, 24)
                 }
                 
                 // Floating glass elements overlay - only show during processing
-                if ideaProcessor.isProcessing {
+                if activeProcessor.isProcessing {
                     VStack {
                         // Progress bar
-                        ProgressView(value: ideaProcessor.progress)
+                        ProgressView(value: activeProcessor.progress)
                             .progressViewStyle(LinearProgressViewStyle(tint: colors.accent))
                             .background(Material.ultraThinMaterial)
                             .padding(.horizontal, 24)
@@ -138,11 +193,11 @@ struct ReviewIdeaView: View {
                         // Status section with liquid glass background
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(ideaProcessor.currentStatus)
+                                Text(activeProcessor.currentStatus)
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundColor(colors.text)
                                 
-                                Text("Using \(modelName)")
+                                Text("Using \(modelType.displayName)")
                                     .font(.caption)
                                     .foregroundColor(colors.textSecondary)
                             }
@@ -163,9 +218,9 @@ struct ReviewIdeaView: View {
         .navigationBarBackButtonHidden(false)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text(ideaProcessor.isProcessing ? "Processing with \(modelName)" : "\"\(title)\"")
+                Text(activeProcessor.isProcessing ? "Processing with \(modelType.displayName)" : "\"\(title)\"")
                     .font(.headline)
-                    .foregroundColor(ideaProcessor.isProcessing ? colors.text : colors.accent)
+                    .foregroundColor(activeProcessor.isProcessing ? colors.text : colors.accent)
             }
             
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -176,7 +231,7 @@ struct ReviewIdeaView: View {
                     
                     // Save the box manually
                     Task {
-                        if let savedBox = await ideaProcessor.saveBoxManually() {
+                        if let savedBox = await activeProcessor.saveBoxManually() {
                             // Notify parent view about the saved box
                             onBoxSaved?(savedBox)
                             
@@ -193,13 +248,26 @@ struct ReviewIdeaView: View {
                         .font(.system(size: 18, weight: .medium))
                         .foregroundColor(.green)
                 }
-                .disabled(ideaProcessor.isProcessing) // Disable during processing
+                .disabled(activeProcessor.isProcessing) // Disable during processing
             }
         }
         .onAppear {
-            // Set the view context for Core Data operations
-            ideaProcessor.viewContext = viewContext
-            ideaProcessor.processIdea(title: title, content: content, modelName: modelName)
+            // Set the view context for Core Data operations and start processing
+            switch modelType {
+            case .appleIntelligence:
+                if let appleProcessor = appleIntelligenceProcessor {
+                    appleProcessor.viewContext = viewContext
+                    appleProcessor.processIdea(title: title, content: content, modelName: modelType.displayName)
+                } else {
+                    // Fallback to Qwen if Apple Intelligence not available
+                    print("🔄 Falling back to Qwen processor since Apple Intelligence unavailable")
+                    qwenProcessor.viewContext = viewContext
+                    qwenProcessor.processIdea(title: title, content: content, modelName: AIModelType.qwen.displayName)
+                }
+            case .qwen:
+                qwenProcessor.viewContext = viewContext
+                qwenProcessor.processIdea(title: title, content: content, modelName: modelType.displayName)
+            }
         }
     }
 }
@@ -255,7 +323,7 @@ struct GeneratedFieldView: View {
         ReviewIdeaView(
             title: "Sample Idea",
             content: "This is a sample idea content for testing",
-            modelName: "Apple Intelligence",
+            modelType: .appleIntelligence,
             mlxModelManager: MLXModelManager.shared,
             onBoxSaved: nil
         )

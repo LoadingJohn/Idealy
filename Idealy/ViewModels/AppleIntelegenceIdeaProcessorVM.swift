@@ -1,5 +1,5 @@
 //
-//  AIIdeaProcessorVM.swift
+//  AppleIntelligenceIdeaProcessorVM.swift
 //  Idealy
 //
 //  Created by Claude Code on 16/8/2025.
@@ -12,7 +12,7 @@ import Combine
 import FoundationModels
 internal import CoreData
 
-class AIIdeaProcessorVM: ObservableObject, IdeaProcessorProtocol {
+class AppleIntelligenceIdeaProcessorVM: ObservableObject, IdeaProcessorProtocol {
     
     // MARK: - Published Properties
     @Published var isProcessing: Bool = false
@@ -59,7 +59,7 @@ class AIIdeaProcessorVM: ObservableObject, IdeaProcessorProtocol {
     ///   - content: The raw idea content to process
     ///   - modelName: The AI model to use (should be "Apple Intelligence")
     func processIdea(title: String, content: String, modelName: String) {
-        print("🍎 AIIdeaProcessorVM: Starting Apple Intelligence processing")
+        print("🍎 AppleIntelligenceIdeaProcessorVM: Starting Apple Intelligence processing")
         print("   Title: \(title)")
         print("   Content: \(content)")
         print("   Model: \(modelName)")
@@ -348,7 +348,7 @@ class AIIdeaProcessorVM: ObservableObject, IdeaProcessorProtocol {
     // MARK: - Error Handling
     
     private func handleError(_ message: String) {
-        print("❌ AIIdeaProcessorVM Error: \(message)")
+        print("❌ AppleIntelligenceIdeaProcessorVM Error: \(message)")
         hasError = true
         errorMessage = message
         isProcessing = false
