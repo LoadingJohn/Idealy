@@ -29,6 +29,10 @@ struct NewView: View {
     @State private var isNewBoxState = true
     @State private var clearFieldsTrigger = false
     
+    // MARK: - Swipe Navigation
+    @State private var showingIdeaBoxView = false
+    @State private var dragOffset: CGFloat = 0
+    
     // MARK: - TEMPORARY DEBUG - COMMENT OUT FOR PRODUCTION
     @State private var debugMode = false
     @State private var forceState: SystemLanguageModel.Availability = .available
@@ -64,6 +68,43 @@ struct NewView: View {
         NavigationView {
             GeometryReader { geometry in
                 ZStack {
+                    // IdeaBoxView - shown when swiped up
+                    if showingIdeaBoxView, let box = selectedBoxEntity {
+                        IdeaBoxView(box: box, onBack: {
+                            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                                showingIdeaBoxView = false
+                                dragOffset = 0
+                            }
+                        }, onBoxDeleted: {
+                            // Reset to "New Box" selection when box is deleted
+                            selectedBox = "New Box"
+                            selectedBoxEntity = nil
+                            isNewBoxState = true
+                            clearFieldsTrigger.toggle()
+                            print("📦 NewView: Reset to 'New Box' after deletion")
+                        })
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .offset(y: 0)
+                        .ignoresSafeArea()
+                        .transition(.move(edge: .bottom))
+                        .zIndex(1)
+                    }
+                    
+                    // Main NewView content
+                    mainContentView(geometry: geometry)
+                        .offset(y: showingIdeaBoxView ? -geometry.size.height : dragOffset)
+                        .opacity(showingIdeaBoxView ? 0 : 1)
+                        .gesture(swipeGesture(geometry: geometry))
+                        .zIndex(0)
+                }
+            }
+            .navigationBarHidden(true)
+        }
+    }
+    
+    // MARK: - Main Content View
+    private func mainContentView(geometry: GeometryProxy) -> some View {
+        ZStack {
                     // Background
                     colors.background
                         .ignoresSafeArea()
@@ -321,9 +362,49 @@ struct NewView: View {
                         Spacer()
                     }
                 }
-            }
-            .navigationBarHidden(true)
         }
+    
+    // MARK: - Swipe Gesture
+    private func swipeGesture(geometry: GeometryProxy) -> some Gesture {
+        DragGesture()
+            .onChanged { value in
+                // Only allow swipe up when a real box is selected (not "New Box")
+                guard !isNewBoxState, selectedBoxEntity != nil else { return }
+                
+                // Only respond to upward swipes (negative translation)
+                if value.translation.height < 0 {
+                    dragOffset = max(value.translation.height, -geometry.size.height * 0.5)
+                }
+            }
+            .onEnded { value in
+                // Only allow swipe up when a real box is selected
+                guard !isNewBoxState, selectedBoxEntity != nil else {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                        dragOffset = 0
+                    }
+                    return
+                }
+                
+                // Threshold for triggering the transition (1/3 of screen height upward)
+                let threshold = -geometry.size.height / 3
+                
+                if value.translation.height < threshold {
+                    // Distinct haptic feedback for successful swipe transition
+                    let notificationFeedback = UINotificationFeedbackGenerator()
+                    notificationFeedback.notificationOccurred(.success)
+                    
+                    // Trigger swipe to IdeaBoxView
+                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                        showingIdeaBoxView = true
+                        dragOffset = 0
+                    }
+                } else {
+                    // Snap back to original position
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                        dragOffset = 0
+                    }
+                }
+            }
     }
 }
 
@@ -804,7 +885,12 @@ struct IdeaView: View {
                     dumpText: ideaContent,
                     targetBox: box,
                     modelType: AIModelType.from(string: selectedModel),
-                    mlxModelManager: mlxModelManager
+                    mlxModelManager: mlxModelManager,
+                    onIdeasSaved: { savedIdeas in
+                        // Clear the idea content when ideas are saved
+                        ideaContent = ""
+                        print("💡 Ideas saved: \(savedIdeas.count) ideas added to \(box.name ?? "box")")
+                    }
                 )) {
                     Text("Dump")
                         .font(.system(size: 18, weight: .semibold))

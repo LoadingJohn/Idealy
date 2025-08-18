@@ -12,6 +12,49 @@ import Combine
 import FoundationModels
 internal import CoreData
 
+@Generable
+struct BusinessModelAnalysis {
+    @Guide(description: "Write a comprehensive 3-4 sentence business summary that explains what the company does, its core value proposition, and its target market. Focus on clarity and impact.")
+    var summary: String
+    
+    @Guide(description: "Identify the specific problem or pain point this business addresses. Explain why this problem matters and who experiences it most acutely.")
+    var problem: String
+    
+    @Guide(description: "Describe how this business solves the identified problem. Explain the core approach, methodology, or product that addresses the pain point.")
+    var solution: String
+    
+    @Guide(description: "Articulate what makes this solution unique and different from alternatives. What special advantage or approach sets it apart?")
+    var uniqueValueProposition: String
+    
+    @Guide(description: "Define the specific groups of customers this business targets. Be detailed about demographics, psychographics, and behavioral characteristics.")
+    var customerSegments: String
+    
+    @Guide(description: "Identify the first wave of customers who would be most eager to adopt this solution. What makes them early adopters?")
+    var earlyAdopters: String
+    
+    @Guide(description: "List current alternatives and competitors that customers use to solve this problem today. Include direct and indirect competition.")
+    var existingAlternatives: String
+    
+    @Guide(description: "Outline how the business will reach and acquire customers. Include both digital and traditional channels for marketing and sales.")
+    var channels: String
+    
+    @Guide(description: "Explain how the business will generate revenue. Include pricing models, revenue streams, and monetization strategies.")
+    var revenueStreams: String
+    
+    @Guide(description: "Identify the major costs and expenses required to operate this business. Include both fixed and variable costs.")
+    var costs: String
+    
+    @Guide(description: "Define the key metrics that will measure success and business health. Include both financial and operational KPIs.")
+    var keyMetrics: String
+    
+    @Guide(description: "Identify sustainable competitive advantages that will be hard for competitors to replicate or overcome.")
+    var unfairAdvantage: String
+    
+    @Guide(description: "Create a compelling elevator pitch that captures the essence of the business in 1-2 sentences. Make it memorable and impactful.")
+    var highLevelConcept: String
+}
+
+@MainActor
 class AppleIntelligenceIdeaProcessorVM: ObservableObject, IdeaProcessorProtocol {
     
     // MARK: - Published Properties
@@ -116,54 +159,106 @@ class AppleIntelligenceIdeaProcessorVM: ObservableObject, IdeaProcessorProtocol 
     }
     
     private func generateStructuredBusinessModelWithGuidance() async throws {
-        // Field-by-field generation using Apple Intelligence @guidance
-        let fields = [
-            ("summary", "Brief business overview"),
-            ("problem", "Core problem being solved"),
-            ("solution", "How the business solves the problem"),
-            ("uniqueValueProposition", "What makes this unique"),
-            ("customerSegments", "Target customer groups"),
-            ("earlyAdopters", "First customers to adopt"),
-            ("existingAlternatives", "Current competition"),
-            ("channels", "How to reach customers"),
-            ("revenueStreams", "How to make money"),
-            ("costs", "Major business expenses"),
-            ("keyMetrics", "Success measurements"),
-            ("unfairAdvantage", "Competitive advantages"),
-            ("highLevelConcept", "Elevator pitch")
-        ]
+        await MainActor.run {
+            self.currentStatus = "Generating complete business model..."
+            self.progress = 0.1
+        }
         
-        let totalFields = Double(fields.count)
+        // Create the business model generation prompt
+        let businessIdeaPrompt = """
+        Business Idea Title: \(title)
         
-        // Process each field with Apple Intelligence
-        for (index, (field, description)) in fields.enumerated() {
+        Business Idea Description: \(content)
+        
+        Analyze this business idea and provide a comprehensive business model analysis.
+        """
+        
+        print("🍎 Starting streaming guided generation for business model")
+        
+        // Create language model session
+        let session = LanguageModelSession(model: model)
+        
+        // Configure generation options with proper max tokens
+        let generationOptions = GenerationOptions(
+            temperature: 0.3,
+            maximumResponseTokens: 4000
+        )
+        
+        // Use streaming guided generation with @Generable structure
+        let response = try await session.streamResponse(
+            to: businessIdeaPrompt,
+            generating: BusinessModelAnalysis.self,
+            options: generationOptions
+        )
+        
+        // Stream the results field by field
+        for try await partialResult in response {
             await MainActor.run {
-                self.currentStatus = "Generating \(field.replacingOccurrences(of: "([a-z])([A-Z])", with: "$1 $2", options: .regularExpression))..."
-                self.progress = Double(index) / totalFields
+                // Update individual fields as they become available
+                if let summary = partialResult.summary, !summary.isEmpty {
+                    self.updateGeneratedField(field: "summary", content: summary)
+                }
+                if let problem = partialResult.problem, !problem.isEmpty {
+                    self.updateGeneratedField(field: "problem", content: problem)
+                }
+                if let solution = partialResult.solution, !solution.isEmpty {
+                    self.updateGeneratedField(field: "solution", content: solution)
+                }
+                if let uniqueValueProposition = partialResult.uniqueValueProposition, !uniqueValueProposition.isEmpty {
+                    self.updateGeneratedField(field: "uniqueValueProposition", content: uniqueValueProposition)
+                }
+                if let customerSegments = partialResult.customerSegments, !customerSegments.isEmpty {
+                    self.updateGeneratedField(field: "customerSegments", content: customerSegments)
+                }
+                if let earlyAdopters = partialResult.earlyAdopters, !earlyAdopters.isEmpty {
+                    self.updateGeneratedField(field: "earlyAdopters", content: earlyAdopters)
+                }
+                if let existingAlternatives = partialResult.existingAlternatives, !existingAlternatives.isEmpty {
+                    self.updateGeneratedField(field: "existingAlternatives", content: existingAlternatives)
+                }
+                if let channels = partialResult.channels, !channels.isEmpty {
+                    self.updateGeneratedField(field: "channels", content: channels)
+                }
+                if let revenueStreams = partialResult.revenueStreams, !revenueStreams.isEmpty {
+                    self.updateGeneratedField(field: "revenueStreams", content: revenueStreams)
+                }
+                if let costs = partialResult.costs, !costs.isEmpty {
+                    self.updateGeneratedField(field: "costs", content: costs)
+                }
+                if let keyMetrics = partialResult.keyMetrics, !keyMetrics.isEmpty {
+                    self.updateGeneratedField(field: "keyMetrics", content: keyMetrics)
+                }
+                if let unfairAdvantage = partialResult.unfairAdvantage, !unfairAdvantage.isEmpty {
+                    self.updateGeneratedField(field: "unfairAdvantage", content: unfairAdvantage)
+                }
+                if let highLevelConcept = partialResult.highLevelConcept, !highLevelConcept.isEmpty {
+                    self.updateGeneratedField(field: "highLevelConcept", content: highLevelConcept)
+                }
                 
-                // Clear the field before starting generation
-                self.updateGeneratedField(field: field, content: "")
+                // Update progress based on filled fields
+                let totalFields = 13.0
+                var filledFields = 0.0
+                if let summary = partialResult.summary, !summary.isEmpty { filledFields += 1 }
+                if let problem = partialResult.problem, !problem.isEmpty { filledFields += 1 }
+                if let solution = partialResult.solution, !solution.isEmpty { filledFields += 1 }
+                if let uniqueValueProposition = partialResult.uniqueValueProposition, !uniqueValueProposition.isEmpty { filledFields += 1 }
+                if let customerSegments = partialResult.customerSegments, !customerSegments.isEmpty { filledFields += 1 }
+                if let earlyAdopters = partialResult.earlyAdopters, !earlyAdopters.isEmpty { filledFields += 1 }
+                if let existingAlternatives = partialResult.existingAlternatives, !existingAlternatives.isEmpty { filledFields += 1 }
+                if let channels = partialResult.channels, !channels.isEmpty { filledFields += 1 }
+                if let revenueStreams = partialResult.revenueStreams, !revenueStreams.isEmpty { filledFields += 1 }
+                if let costs = partialResult.costs, !costs.isEmpty { filledFields += 1 }
+                if let keyMetrics = partialResult.keyMetrics, !keyMetrics.isEmpty { filledFields += 1 }
+                if let unfairAdvantage = partialResult.unfairAdvantage, !unfairAdvantage.isEmpty { filledFields += 1 }
+                if let highLevelConcept = partialResult.highLevelConcept, !highLevelConcept.isEmpty { filledFields += 1 }
+                
+                self.progress = min(0.9, 0.1 + (filledFields / totalFields) * 0.8)
+                self.currentStatus = "Generating field \(Int(filledFields + 1)) of \(Int(totalFields))..."
             }
             
-            // Create prompt for this specific field
-            let prompt = createPromptForField(field: field, description: description, idea: "\(title): \(content)")
-            print("🍎 Generating field: \(field) with Apple Intelligence")
-            
-            // Generate content using Apple Intelligence
-            let result = try await generateWithAppleIntelligence(prompt: prompt, field: field)
-            
-            // Update UI with final result
-            await MainActor.run {
-                self.updateGeneratedField(field: field, content: result)
-                print("✅ AI Field '\(field)' COMPLETE: \(result.count) characters")
-                
-                // Haptic feedback for completed field
-                let impactFeedback = UIImpactFeedbackGenerator(style: .light)
-                impactFeedback.impactOccurred()
-            }
-            
-            // Small delay between fields
-            try await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds
+            // Haptic feedback for each field completion
+            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+            impactFeedback.impactOccurred()
         }
         
         await MainActor.run {
@@ -175,57 +270,8 @@ class AppleIntelligenceIdeaProcessorVM: ObservableObject, IdeaProcessorProtocol 
             let notificationFeedback = UINotificationFeedbackGenerator()
             notificationFeedback.notificationOccurred(.success)
         }
-        
-        // Note: Box is only saved when user presses the checkmark button
     }
     
-    private func generateWithAppleIntelligence(prompt: String, field: String) async throws -> String {
-        // TODO: Implement actual Apple Intelligence @guidance generation
-        // For now, return a placeholder that indicates Apple Intelligence would be used
-        
-        // Simulate streaming by updating field incrementally
-        let mockResponse = "Apple Intelligence generated content for \(field): This would be real AI-generated business analysis using Foundation Models."
-        
-        // Simulate streaming updates
-        let words = mockResponse.components(separatedBy: " ")
-        var currentText = ""
-        
-        for (index, word) in words.enumerated() {
-            currentText += (index == 0 ? "" : " ") + word
-            
-            await MainActor.run {
-                self.updateGeneratedField(field: field, content: currentText)
-            }
-            
-            // Small delay to simulate streaming
-            try await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
-        }
-        
-        return currentText
-    }
-    
-    private func createPromptForField(field: String, description: String, idea: String) -> String {
-        let basePrompt = """
-        Business Idea: \(idea)
-        
-        Generate a concise, specific response for: \(description)
-        
-        Keep the response to 1-3 sentences, focused and relevant to the business idea.
-        Provide direct, actionable insights without headers or formatting.
-        """
-        
-        // Field-specific prompts can be added here for more tailored generation
-        switch field {
-        case "summary":
-            return basePrompt + "\n\nWrite a one-sentence summary of what this business does:"
-        case "problem":
-            return basePrompt + "\n\nWhat main problem does this business solve?"
-        case "solution":
-            return basePrompt + "\n\nHow does this business solve the problem?"
-        default:
-            return basePrompt + "\n\nAnalyze the \(field) aspect:"
-        }
-    }
     
     private func updateGeneratedField(field: String, content: String) {
         // Update the specific published property for this field
